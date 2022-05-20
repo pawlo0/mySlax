@@ -17,16 +17,20 @@ When SLAX initiates, I don't want it to login automatically. This is doen by com
 # ExecStart=/bin/su --login -c "/usr/bin/startx -- :0 vt7 -ac -nolisten tcp"
 ```
 
-Then I'd change the password for the root user:  ```passwd```
-
-Edit `file /etc/issue` to get rid of showing the password when logging in.
+Then I'd change the password for the root user. Edit file `/etc/issue` to get rid of showing the password when logging in.
 
 #### Optional
-Before logging out, you can create a new user:```useradd -m username```
-And set password for it:```passwd username```
+Before logging out, you can create a new user:
+```
+useradd -m username
+passwd username
+```
 
 Or if you're happy with the already existent Guest user, just ignore the creation of new user steps and logout: `exit`
 And login back again either with your new user or with Guest user. Don't forget to change the Guest password in this case.
 
-To start fluxbox:```startx```
+To start fluxbox:
+```
+startx
+```
 
