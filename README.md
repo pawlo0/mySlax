@@ -53,12 +53,19 @@ Don't forget to change guest's password as well
 passwd guest
 ```
 
+### 2.3 Change startfluxbox
+Before leaving root need to change a file. Edit `/bin/startfluxbox` and edit the below line:
+```
+fluxdir="~/.fluxbox"
+```
+
 Then logout. Loging as guest, but don't startx just yet.
 
 ## 3 Prepare guest fluxbox
 ```
 cp /root/.Xresources ~
 cp /root/.blackbox* ~
+cp /root/.xinitrc ~
 cp -R /root/.config /home/guest
 cp -R /root/.fluxbox /home/guest
 ```
