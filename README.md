@@ -27,6 +27,11 @@ Because I use Slax in a windows laptop, when I go back to Windows it is common t
 ```
 timedatectl set-local-rtc 1
 ```
+And probably will need to fix the system and hardware time
+```
+date +%T -s "10:13:13"
+hwclock -w
+```
 
 ## 2. Deal with root user
 
