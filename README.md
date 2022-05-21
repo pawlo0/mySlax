@@ -27,54 +27,112 @@ Because I use Slax in a windows laptop, when I go back to Windows it is common t
 ```
 timedatectl set-local-rtc 1
 ```
-And probably will need to fix the system and hardware time
+And probably will need to fix the system and hardware time:
 ```
-date +%T -s "10:13:13"
-hwclock -w
-```
-
-## 2. Deal with root user
-
-### 3.1 Disable automatic login.
-When SLAX initiates, I don't want it to login automatically. Comment the below line in `/etc/systemd/system/xorg.service`
-```
-[Service]
-# ExecStart=/bin/su --login -c "/usr/bin/startx -- :0 vt7 -ac -nolisten tcp"
+timedatectl set-timezone Europe/London
 ```
 
-### 3.2 Create new user - Optional
-In the terminal type the below to create a new user:
+## 2. Login as guest user
+Slax is set to automaticaly login as root. I prefer to log in as guest. But first we need to prepare fluxbox for guest user. 
+
+### 2.1 Create new user - Optional
+Optionally you can create new user if you don't want to be called Guest. In the terminal type the below to create a new user:
 ```
 useradd -m username
 passwd username
 ```
+In this tutorial I'm happy with the already Slax existent "Guest" user.
 
-Or if you're happy with the already Slax existent "Guest" user.
-
-### 3.3 Change root password
-Thought about removing the root account altogether, but it's simpler to just change the password.
-
-### 3.5 Login as new user
-I'll using guest user (password in slax is "guest").
-```
-su guest
-```
-Don't forget to change guest's password.
+### 2.2 Change root password
+Might wandering why use guest user if Slax root pass is widely known. Thought about removing the root account altogether, but it's simpler to just change the password.
 ```
 passwd
-````
+```
+Don't forget to change guest's password as well
+```
+passwd guest
+```
 
-## 4. Customize fluxbox
-
-### 4.1 Copy some files
+### 2.3 Prepare guest fluxbox
 ```
 cp /root/.Xresources /home/guest
-cp -R /root/.fluxbox/ /home/guest
+cp /root/.blackbox-menu /home/guest
+cp /root/.blackboxrc /home/guest
+cp -R /root/.config /home/guest
+cp -R /root/.fluxbox /home/guest
+```
+Slax Fluxbox assumes you're root, hence need to modify some files
+
+Edit `/home/guest/.fluxbox/init` in the below line
+```
+session.screen0.windowMenu:	/root/.fluxbox/windowmenu
+```
+to
+```
+session.screen0.windowMenu:	~/.fluxbox/windowmenu
 ```
 
-## Start fluxbox
-To start fluxbox:
+Edit `/home/guest/.fluxbox/menu`. Delete (almost all) and replace by the below:
 ```
-startx
+[begin] (Desktop menu)
+   [exec] (Terminal) { xterm -ls }
+   [exec] (File Manager) { pcmanfm }
+   [exec] (Web Browser) { chrome }
+   [exec] (Text Editor) { scite }
+   [exec] (Calculator) { gnome-calculator }
+   [exec] (Network Manager) { connman-gtk }
+   [exec] (Run) { fbappselect }
+   [separator]
+   [workspaces] (Workspaces                ...)
+   [submenu] (Screen resolution       ...) {}
+      [include] (~/.fluxbox/menu_resolution)
+   [end]
+   [submenu] (Keyboard layout          ...) {}
+      [exec] (English UK) { fbsetkb gb } </usr/share/icons/locolor/16x16/flags/flag_usa.png>
+      [exec] (Portuguese) { fbsetkb pt } </usr/share/icons/locolor/16x16/flags/flag_portugal.png>
+      [end]
+   [end]
+   [exec] (Exit / Logout) { fblogout }
+
+[end]
 ```
+
+Edit `
+
+### 3.1 Automaticaly login as guest.
+When SLAX initiates, I want it to login to guest user instead. Change the below line in `/lib/systemd/system/xorg.service`
+```
+[Service]
+ExecStart=/bin/su - guest --login -c "/usr/bin/startx -- :0 vt7 -ac -nolisten tcp"
+```
+
+Edit `/home/guest/.fluxbox/startup`. Replace the below:
+```
+xmodmap "/root/.Xmodmap"
+```
+by
+```
+xmodmap "~/.Xmodmap"
+```
+And delete the below:
+```
+# Share common directories with guest user. This is necessary
+# because some apps like chromium must be running under guest
+for dir in Desktop Documents Downloads Music Pictures Public Templates Videos; do
+   if ! mountpoint /root/$dir; then
+      mount --bind /home/guest/$dir /root/$dir
+   fi
+done
+```
+And delete the below (won't need it):
+```
+# If we are running inside VirtualBox or vmware,
+# switch to bigger screen size right away
+OUTPUT=$(xrandr 2>/dev/null | grep -iv disconnected | grep -i 'connected' | head -n 1 | cut -d " " -f 1)
+if [ "$(virt-what | egrep -i "virtualbox|vmware")" != "" ]; then
+  xrandr --output $OUTPUT --mode 1280x800 -s 1280x800
+fi
+```
+
+
 
